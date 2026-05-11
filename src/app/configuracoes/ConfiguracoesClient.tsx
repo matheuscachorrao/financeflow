@@ -19,8 +19,9 @@ export default function ConfiguracoesClient({ session, profile }: { session: Ses
 
   const handleSaveProfile = async () => {
     setSaving(true)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-await (supabase as any).from('profiles').upsert({ id: session.user.id, email: session.user.email!, full_name: name })    await supabase.auth.updateUser({ data: { full_name: name } })
+    const db = supabase as any
+    await db.from('profiles').upsert({ id: session.user.id, email: session.user.email!, full_name: name })
+    await supabase.auth.updateUser({ data: { full_name: name } })
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
@@ -47,7 +48,6 @@ await (supabase as any).from('profiles').upsert({ id: session.user.id, email: se
         <p className="text-slate-500 text-sm mt-0.5">Gerencie sua conta e preferências</p>
       </div>
 
-      {/* Profile */}
       <div className="card p-6">
         <h2 className="font-semibold text-slate-900 mb-4">Perfil</h2>
         <div className="space-y-4">
@@ -69,7 +69,6 @@ await (supabase as any).from('profiles').upsert({ id: session.user.id, email: se
         </div>
       </div>
 
-      {/* Password */}
       <div className="card p-6">
         <h2 className="font-semibold text-slate-900 mb-4">Alterar Senha</h2>
         <div className="space-y-4">
@@ -83,7 +82,6 @@ await (supabase as any).from('profiles').upsert({ id: session.user.id, email: se
         </div>
       </div>
 
-      {/* Danger Zone */}
       <div className="card p-6 border-red-200">
         <h2 className="font-semibold text-red-700 mb-1">Zona de Perigo</h2>
         <p className="text-sm text-slate-500 mb-4">Ações irreversíveis para sua conta.</p>
