@@ -7,7 +7,7 @@ import { Category } from '@/types/database'
 import { CATEGORY_COLORS } from '@/lib/utils'
 import Modal from '@/components/ui/Modal'
 
-const ICONS = ['💼', '💻', '📈', '🏠', '🚗', '🍽️', '❤️', '🎮', '📚', '✈️', '🛍️', '💰', '💸', '📱', '🎵', '🏋️', '☕', '🎁', '🔧', '💡']
+const ICONS = ['💼','💻','📈','🏠','🚗','🍽️','❤️','🎮','📚','✈️','🛍️','💰','💸','📱','🎵','🏋️','☕','🎁','🔧','💡']
 
 export default function CategoriasClient({ categories }: { categories: Category[] }) {
   const router = useRouter()
@@ -15,62 +15,36 @@ export default function CategoriasClient({ categories }: { categories: Category[
   const [showModal, setShowModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [loading, setLoading] = useState(false)
-
   const [name, setName] = useState('')
-  const [type, setType] = useState<'entrada' | 'saida' | 'ambos'>('saida')
+  const [type, setType] = useState('saida')
   const [color, setColor] = useState(CATEGORY_COLORS[0])
   const [icon, setIcon] = useState('💰')
 
   const openCreate = () => {
     setEditingCategory(null)
-    setName('')
-    setType('saida')
-    setColor(CATEGORY_COLORS[0])
-    setIcon('💰')
+    setName(''); setType('saida'); setColor(CATEGORY_COLORS[0]); setIcon('💰')
     setShowModal(true)
   }
 
   const openEdit = (c: Category) => {
     setEditingCategory(c)
-    setName(c.name)
-    setType(c.type as any)
-    setColor(c.color)
-    setIcon(c.icon)
+    setName(c.name); setType(c.type); setColor(c.color); setIcon(c.icon)
     setShowModal(true)
   }
 
   const handleSave = async () => {
     if (!name.trim()) return
-
     setLoading(true)
-
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
 
-    if (!user) {
-      setLoading(false)
-      return
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabaseAny = supabase as any
 
     if (editingCategory) {
-      await supabase
-        .from('categories')
-        .update({
-          name,
-          type,
-          color,
-          icon
-        } as any)
-        .eq('id', editingCategory.id)
+      await supabaseAny.from('categories').update({ name, type, color, icon }).eq('id', editingCategory.id)
     } else {
-      await supabase
-        .from('categories')
-        .insert({
-          user_id: user.id,
-          name,
-          type,
-          color,
-          icon
-        } as any)
+      await supabaseAny.from('categories').insert({ user_id: user.id, name, type, color, icon })
     }
 
     setLoading(false)
@@ -94,15 +68,12 @@ export default function CategoriasClient({ categories }: { categories: Category[
           <h1 className="text-2xl font-bold text-slate-900">Categorias</h1>
           <p className="text-slate-500 text-sm mt-0.5">Organize suas transações por categoria</p>
         </div>
-        <button onClick={openCreate} className="btn-primary">
-          Nova categoria
-        </button>
+        <button onClick={openCreate} className="btn-primary">Nova categoria</button>
       </div>
 
       {categories.length === 0 && (
         <div className="card p-16 text-center">
           <p className="text-slate-400 text-sm">Nenhuma categoria criada ainda.</p>
-          <p className="text-slate-400 text-xs mt-1">Crie categorias para organizar suas finanças.</p>
         </div>
       )}
 
@@ -125,12 +96,8 @@ export default function CategoriasClient({ categories }: { categories: Category[
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(c.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
-                      Excluir
-                    </button>
+                    <button onClick={() => openEdit(c)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">✏️</button>
+                    <button onClick={() => handleDelete(c.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg">🗑️</button>
                   </div>
                 </div>
               ))}
@@ -146,36 +113,35 @@ export default function CategoriasClient({ categories }: { categories: Category[
               <label className="label">Nome</label>
               <input type="text" className="input" placeholder="Nome da categoria" value={name} onChange={e => setName(e.target.value)} />
             </div>
-
             <div>
               <label className="label">Tipo</label>
-              <select className="input" value={type} onChange={e => setType(e.target.value as any)}>
+              <select className="input" value={type} onChange={e => setType(e.target.value)}>
                 <option value="entrada">Entrada</option>
                 <option value="saida">Saída</option>
                 <option value="ambos">Ambos</option>
               </select>
             </div>
-
             <div>
               <label className="label">Ícone</label>
               <div className="grid grid-cols-10 gap-2">
                 {ICONS.map(ic => (
-                  <button key={ic} type="button" onClick={() => setIcon(ic)} className={`text-xl p-1.5 rounded-lg transition-colors ${icon === ic ? 'bg-brand-100 ring-2 ring-brand-400' : 'hover:bg-slate-100'}`}>
+                  <button key={ic} type="button" onClick={() => setIcon(ic)}
+                    className={`text-xl p-1.5 rounded-lg transition-colors ${icon === ic ? 'bg-brand-100 ring-2 ring-brand-400' : 'hover:bg-slate-100'}`}>
                     {ic}
                   </button>
                 ))}
               </div>
             </div>
-
             <div>
               <label className="label">Cor</label>
               <div className="flex gap-2 flex-wrap">
                 {CATEGORY_COLORS.map(c => (
-                  <button key={c} type="button" onClick={() => setColor(c)} className={`w-8 h-8 rounded-lg transition-all ${color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : ''}`} style={{ backgroundColor: c }} />
+                  <button key={c} type="button" onClick={() => setColor(c)}
+                    className={`w-8 h-8 rounded-lg transition-all ${color === c ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : ''}`}
+                    style={{ backgroundColor: c }} />
                 ))}
               </div>
             </div>
-
             <button onClick={handleSave} disabled={loading || !name.trim()} className="btn-primary w-full justify-center">
               {loading ? 'Salvando...' : 'Salvar categoria'}
             </button>
