@@ -19,8 +19,8 @@ export default function ConfiguracoesClient({ session, profile }: { session: Ses
 
   const handleSaveProfile = async () => {
     setSaving(true)
-    await supabase.from('profiles').upsert({ id: session.user.id, email: session.user.email!, full_name: name })
-    await supabase.auth.updateUser({ data: { full_name: name } })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+await (supabase as any).from('profiles').upsert({ id: session.user.id, email: session.user.email!, full_name: name })    await supabase.auth.updateUser({ data: { full_name: name } })
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
