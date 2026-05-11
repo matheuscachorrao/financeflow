@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Category, PaymentMethod, TransactionType } from '@/types/database'
@@ -24,6 +24,7 @@ interface TransactionFormProps {
 export default function TransactionForm({ type, categories, editData, onSuccess }: TransactionFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const db = supabase as any
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -55,10 +56,10 @@ export default function TransactionForm({ type, categories, editData, onSuccess 
 
     let err
     if (editData) {
-      const { error } = await supabase.from('transactions').update(payload).eq('id', editData.id)
+      const { error } = await db.from('transactions').update(payload).eq('id', editData.id)
       err = error
     } else {
-      const { error } = await supabase.from('transactions').insert(payload)
+      const { error } = await db.from('transactions').insert(payload)
       err = error
     }
 
